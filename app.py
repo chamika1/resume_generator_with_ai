@@ -93,7 +93,7 @@ def generate_resume():
         resume_sections.append(data['volunteer'])
 
     # Updated prompt with comprehensive structure
-    prompt = f"""Create a professional HTML resume with the following structure:
+    template = """Create a professional HTML resume with the following structure:
 
 <div class="resume-header">
     <h1>[Full Name]</h1>
@@ -146,7 +146,9 @@ def generate_resume():
 
 Use the following information to fill in the template:
 
-{'\n'.join(resume_sections)}
+"""
+
+    requirements = """
 
 Requirements:
 1. Create a modern, professional layout
@@ -157,6 +159,8 @@ Requirements:
 6. Maintain professional spacing and hierarchy
 7. Make contact information easily scannable
 8. Format dates and company names consistently"""
+
+    prompt = template + '\n'.join(resume_sections) + requirements
 
     # Update system message for comprehensive formatting
     json_data = {
