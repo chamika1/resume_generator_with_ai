@@ -213,9 +213,108 @@
             margin-top: 3rem;
             max-height: 1000px;
             overflow-y: auto;
-            width: 850px;
+            width: 100%;
+            max-width: 850px;
             margin-left: auto;
             margin-right: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .header-section {
+                padding: 1.5rem 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .header-section h1 {
+                font-size: 2rem;
+            }
+
+            .header-section p {
+                font-size: 1rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-section h3 {
+                font-size: 1.2rem;
+            }
+
+            .btn-primary, .btn-success {
+                width: 100%;
+                padding: 0.8rem;
+                margin-bottom: 1rem;
+            }
+
+            /* Adjust form inputs for mobile */
+            .form-control {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+
+            /* Adjust textarea heights for mobile */
+            #summary { min-height: 100px; }
+            #experience { min-height: 200px; }
+            #education { min-height: 120px; }
+            #skills { min-height: 150px; }
+            #projects { min-height: 200px; }
+
+            /* Adjust loading animation size */
+            .loading-animation {
+                width: 150px;
+                height: 150px;
+            }
+
+            .loading-text {
+                font-size: 1rem;
+            }
+
+            .progress-container {
+                width: 80%;
+                max-width: 250px;
+            }
+        }
+
+        /* Additional small screen optimizations */
+        @media (max-width: 576px) {
+            .header-section h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-section {
+                padding: 1rem;
+            }
+
+            /* Adjust character counter position */
+            .char-counter {
+                font-size: 0.7rem;
+                margin-top: 3px;
+            }
+
+            /* Make form labels more readable on mobile */
+            label {
+                font-size: 0.9rem;
+                margin-bottom: 0.3rem;
+            }
+
+            /* Optimize spacing for mobile */
+            .mb-3 {
+                margin-bottom: 0.8rem !important;
+            }
+
+            /* Adjust success animation size */
+            .success-animation {
+                width: 120px;
+                height: 120px;
+            }
         }
 
         /* Custom scrollbar */
@@ -231,6 +330,24 @@
         ::-webkit-scrollbar-thumb {
             background: var(--accent-color);
             border-radius: 5px;
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-width: 576px) {
+            .resume-preview {
+                padding: 0.8rem;
+                margin-top: 1.5rem;
+            }
+
+            /* Adjust scrollbar for touch devices */
+            ::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            /* Add some breathing room for mobile */
+            body {
+                padding: 1rem;
+            }
         }
 
         /* Increase textarea heights for longer content */
