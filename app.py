@@ -33,6 +33,8 @@ headers = {
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    'Accept': 'application/json',
+    'Connection': 'keep-alive'
 }
 
 
@@ -172,7 +174,7 @@ Requirements:
             'content': prompt
         }],
         'id': str(uuid.uuid4()),
-        'previewToken': None,
+        'previewToken': '',
         'userId': None,
         'codeModelMode': False,
         'agentMode': {},
@@ -180,6 +182,7 @@ Requirements:
         'isMicMode': False,
         'userSystemPrompt': None,
         'maxTokens': 4096,
+        'stream': False,
         'playgroundTopP': 0.9,
         'playgroundTemperature': 0.5,
         'isChromeExt': False,
@@ -199,22 +202,66 @@ Requirements:
             cookies=cookies,
             headers=headers,
             json=json_data,
-            timeout=30
+            timeout=60
         )
         
         if response.status_code == 200:
-            resume_text = response.text.strip()
+            try:
+                # Try to parse JSON response
+                response_json = response.json()
+                resume_text = response_json.get('response', '').strip()
+            except json.JSONDecodeError:
+                # If JSON parsing fails, use raw text
+                resume_text = response.text.strip()
+                
+            if not resume_text:
+                return jsonify({
+                    'success': False,
+                    'error': 'Empty response from API'
+                })
             
-            # Clean up the response text
-            # Remove everything before the first HTML tag
-            cleaned_text = re.sub(r'^.*?<', '<', resume_text, flags=re.DOTALL)
+            # Try different patterns to find HTML content
+            patterns = [
+                r'```html\s*(<!DOCTYPE.*?</html>)\s*```',  # HTML in code block
+                r'```\s*(<!DOCTYPE.*?</html>)\s*```',      # HTML in unmarked code block
+                r'(<!DOCTYPE.*?</html>)',                  # Raw HTML
+                r'<html>.*?</html>',                       # HTML without DOCTYPE
+            ]
             
-            # Remove explanation and code block markers at the end
-            cleaned_text = re.sub(r'```.*?$', '', cleaned_text, flags=re.DOTALL)
-            cleaned_text = re.sub(r'### Explanation.*?$', '', cleaned_text, flags=re.DOTALL)
+            cleaned_text = None
+            for pattern in patterns:
+                match = re.search(pattern, resume_text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    cleaned_text = match.group(1)
+                    break
             
-            # Remove any remaining markdown code block markers
-            cleaned_text = cleaned_text.replace('```html', '').replace('```', '')
+            if not cleaned_text:
+                # If no HTML found, try to extract content between tags
+                content = re.findall(r'<[^>]+>.*?</[^>]+>', resume_text, re.DOTALL)
+                if content:
+                    # Wrap the content in basic HTML structure
+                    cleaned_text = f"""
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Resume</title>
+                        <style>
+                            body {{ font-family: Arial, sans-serif; padding: 20px; }}
+                            .resume-section {{ margin-bottom: 20px; }}
+                        </style>
+                    </head>
+                    <body>
+                        {''.join(content)}
+                    </body>
+                    </html>
+                    """
+                else:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Could not find HTML content in response',
+                        'raw_response': resume_text[:500]  # First 500 chars for debugging
+                    })
             
             if cleaned_text:
                 return jsonify({
@@ -232,12 +279,13 @@ Requirements:
             return jsonify({
                 'success': False, 
                 'error': f'API request failed with status code {response.status_code}',
-                'response_text': response.text
+                'raw_response': response.text[:1000]  # Include first 1000 chars of response for debugging
             })
     
     except Exception as e:
         print("Exception Type:", type(e).__name__)
         print("Exception Details:", str(e))
+        print("Response content:", response.text[:1000] if 'response' in locals() else "No response")
         return jsonify({'success': False, 'error': str(e)})
 
 if __name__ == '__main__':
